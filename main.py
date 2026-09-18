@@ -5,12 +5,50 @@ screen = pygame.display.set_mode((800, 500))
 pygame.display.set_caption("Treasure Hunt")
 
 clock = pygame.time.Clock()
-player_sheet = pygame.image.load("assets/player_sheet.png")
-frames = []
-for i in range(4):
-    frame = player_sheet.subsurface((i * 64, 0, 64, 64))
-    frames.append(frame)
-player = pygame.Rect(100, 200, 64, 64)
+
+class Player:
+    def __init__(self):
+        self.image = pygame.image.load("assets/player_sheet.png")
+        self.frames = []
+        for i in range(4):
+            frame = self.image.subsurface((i * 64, 0, 64, 64))
+            self.frames.append(frame)
+        self.rect = pygame.Rect(100, 200, 64, 64)
+        self.current_frame = 0
+        self.last_update = 0
+        self.animation_speed = 150
+
+    def move(self):
+        keys = pygame.key.get_pressed()
+        self.moving = False
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += 5
+            self.moving = True
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= 5
+            self.moving = True
+        if keys[pygame.K_UP]:
+            self.rect.y -= 5
+            self.moving = True
+        if keys[pygame.K_DOWN]:
+            self.rect.y += 5
+            self.moving = True
+
+    def animate(self):
+        if self.moving:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.last_update >= self.animation_speed:
+                 self.current_frame += 1
+                 if self.current_frame >= 4:
+                     self.current_frame = 0
+                 self.last_update = current_time
+        else:
+            self.current_frame = 0         
+
+    def draw(self):
+        screen.blit(self.frames[self.current_frame], self.rect)
+
+player = Player()
 
 running = True
 while running:
@@ -18,17 +56,13 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_RIGHT]:
-        player.x += 5
-    if keys[pygame.K_LEFT]:
-        player.x -= 5
-    if keys[pygame.K_UP]:
-        player.y -= 5
-    if keys[pygame.K_DOWN]:
-        player.y += 5
+    player.move()
+    player.animate()
+
     screen.fill((30, 30, 40))
-    screen.blit(frames[0], player)
+
+    player.draw()
+
     pygame.display.update()
     clock.tick(60)
 pygame.quit()
