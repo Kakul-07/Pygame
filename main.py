@@ -1,12 +1,16 @@
 import pygame
 pygame.init()
 
-screen = pygame.display.set_mode((1000, 600))
+screen = pygame.display.set_mode((800, 500))
 pygame.display.set_caption("Treasure Hunt")
 
-player_image = pygame.image.load("assets/player.png")
-player_image = pygame.transform.scale(player_image, (50, 50))
-player = pygame.Rect(100, 200, 50, 50)
+clock = pygame.time.Clock()
+player_sheet = pygame.image.load("assets/player_sheet.png")
+frames = []
+for i in range(4):
+    frame = player_sheet.subsurface((i * 64, 0, 64, 64))
+    frames.append(frame)
+player = pygame.Rect(100, 200, 64, 64)
 
 running = True
 while running:
@@ -16,18 +20,15 @@ while running:
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_RIGHT]:
-      player.x += 5
+        player.x += 5
     if keys[pygame.K_LEFT]:
-      player.x -= 5
+        player.x -= 5
     if keys[pygame.K_UP]:
-      player.y -= 5
+        player.y -= 5
     if keys[pygame.K_DOWN]:
-      player.y += 5 
-
+        player.y += 5
     screen.fill((30, 30, 40))
-
-    screen.blit(player_image, player)
-
+    screen.blit(frames[0], player)
     pygame.display.update()
-
+    clock.tick(60)
 pygame.quit()
