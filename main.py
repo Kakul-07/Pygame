@@ -1,92 +1,77 @@
 import pygame
 pygame.init()
 
-screen = pygame.display.set_mode((800, 500))
+screen=pygame.display.set_mode((800,500))
 pygame.display.set_caption("Treasure Hunt")
 
-clock = pygame.time.Clock()
+clock=pygame.time.Clock()
 
-class Player:
-    def __init__(self):
-        self.image = pygame.image.load("assets/player_sheet.png")
-        self.frames = []
-        for i in range(4):
-            frame = self.image.subsurface((i * 64, 0, 64, 64))
-            self.frames.append(frame)
-        self.rect = pygame.Rect(100, 200, 64, 64)
-        self.current_frame = 0
-        self.last_update = 0
-        self.animation_speed = 150
-    def move(self, obstacles):
-        keys = pygame.key.get_pressed()
-        self.moving = False
-        old_x = self.rect.x
-        old_y = self.rect.y
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += 5
-            self.moving = True
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= 5
-            self.moving = True
-        if keys[pygame.K_UP]:
-            self.rect.y -= 5
-            self.moving = True
-        if keys[pygame.K_DOWN]:
-           self.rect.y += 5
-           self.moving = True
-        for obstacle in obstacles:
-          if self.rect.colliderect(obstacle.rect):
-            self.rect.x = old_x
-            self.rect.y = old_y
-    def animate(self):
-        if self.moving:
-            current_time = pygame.time.get_ticks()
-            if current_time - self.last_update >= self.animation_speed:
-                 self.current_frame += 1
-                 if self.current_frame >= 4:
-                     self.current_frame = 0
-                 self.last_update = current_time
-        else:
-            self.current_frame = 0         
-    def draw(self):
-        screen.blit(self.frames[self.current_frame], self.rect)
-class Coin:
-    def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 30, 30)
-        self.collected = False
-    def collect(self, player_rect):
-        if self.rect.colliderect(player_rect):
-            self.collected = True    
-    def draw(self):
-        if not self.collected:
-            pygame.draw.circle(screen, (255, 200, 0), self.rect.center, 15)
+background_sheet=pygame.image.load("assets/background.png").convert_alpha()
+player_sheet=pygame.image.load("assets/character.png").convert_alpha()
 
-class Obstacle:
-    def __init__(self, x, y, width, height):
-        self.rect = pygame.Rect(x, y, width, height)
-    def draw(self):
-        pygame.draw.rect(screen, (100, 100, 100), self.rect)            
+grass=background_sheet.subsurface((0,0,228,228))
+grass=pygame.transform.scale(grass,(100,100))
+tree=background_sheet.subsurface((0,460,76,230))
+tree=pygame.transform.scale(tree,(60,100))
+player_frames=[]
+for i in range(4):
+    frame=player_sheet.subsurface((i*96,0,96,128))
+    frame=pygame.transform.scale(frame,(60,80))
+    player_frames.append(frame)
+current_frame=0
+animation_timer=0
 
-player = Player()
-coin = Coin(500, 250)
-obstacles = [
-    Obstacle(300, 150, 150, 40),
-    Obstacle(200, 350, 40, 100),
-    Obstacle(600, 100, 40, 150)
+player=pygame.Rect(370,210,60,80)
+trees=[
+    pygame.Rect(200,100,60,100),
+    pygame.Rect(500,100,60,100),
+    pygame.Rect(650,300,60,100)
 ]
-running = True
+
+speed=5
+running=True
 while running:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    player.move(obstacles)
-    player.animate()
-    coin.collect(player.rect)
-    screen.fill((30, 30, 40))
-    player.draw()
-    coin.draw()
-    for obstacle in obstacles:
-        obstacle.draw()
+        if event.type==pygame.QUIT:
+            running=False
+
+    keys=pygame.key.get_pressed()
+    moving=False
+    if keys[pygame.K_RIGHT]:
+        player.x+=speed
+    if keys[pygame.K_LEFT]:
+        player.x-=speed
+    if keys[pygame.K_UP]:
+        player.y-=speed
+    if keys[pygame.K_DOWN]:
+        player.y+=speed
+    for tree_rect in trees:
+        if player.colliderect(tree_rect):
+            if keys[pygame.K_RIGHT]:
+                 player.x-=speed
+            if keys[pygame.K_LEFT]:
+                player.x+=speed
+            if keys[pygame.K_UP]:
+                player.y+=speed
+            if keys[pygame.K_DOWN]:
+                player.y-=speed    
+    if keys[pygame.K_RIGHT] or keys[pygame.K_LEFT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]:
+        moving=True
+    if moving:
+        animation_timer+=1
+        if animation_timer>=8:
+            current_frame+=1
+            if current_frame>=4:
+                current_frame=0
+            animation_timer=0
+    else:
+        current_frame=0
+    for x in range(0,800,100):
+        for y in range(0,500,100):
+            screen.blit(grass,(x,y))
+    for tree_rect in trees:
+        screen.blit(tree,tree_rect)        
+    screen.blit(player_frames[current_frame],player)
     pygame.display.update()
     clock.tick(60)
 pygame.quit()
